@@ -28,6 +28,10 @@ function Ball:init(skin)
     -- this will effectively be the color of our ball, and we will index
     -- our table of Quads relating to the global block texture using this
     self.skin = skin
+
+    -- this value is used to keep track of the ballNumber and loose only
+    -- if there is no ball left in play
+    self.inPlay = true
 end
 
 --[[
