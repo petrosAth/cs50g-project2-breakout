@@ -16,9 +16,6 @@
 
 PlayState = Class{__includes = BaseState}
 
--- keep track of the number of balls in play
-local ballNumber = 1
-
 --[[
     We initialize what's in our PlayState via a state table that we pass between
     states as we go from playing to serving.
@@ -32,6 +29,9 @@ function PlayState:enter(params)
     self.ball = params.ball
     self.level = params.level
     self.recoverPoints = params.recoverPoints
+
+    -- keep track of the number of balls in play
+    self.ballNumber = 1
 
     -- give ball random starting velocity
     self.ball[1].dx = math.random(-200, 200)
@@ -95,13 +95,18 @@ function PlayState:update(dt)
 
                 -- if the brick is poweruped it is labeled here
                 if math.random(3) > 2 then
-                    local i = math.random(9, 10)
-                    if i == 9 then
+                    if lockedBricks then
+                        local i = math.random(9, 10)
+                        if i == 9 then
+                            brick.powerUped = true
+                            brick.powerUp.type = 9
+                        elseif i == 10 then
+                            brick.powerUped = true
+                            brick.powerUp.type = 10
+                        end
+                    else
                         brick.powerUped = true
                         brick.powerUp.type = 9
-                    elseif lockedBricks and (i == 10) then
-                        brick.powerUped = true
-                        brick.powerUp.type = 10
                     end
                 end
                 
@@ -194,7 +199,7 @@ function PlayState:update(dt)
                 brick.powerUp.inPlay = false
 
                 if brick.powerUp.type == 9 then
-                    ballNumber = ballNumber + 2
+                    self.ballNumber = self.ballNumber + 2
 
                     -- insert two more balls in play
                     for m = 1, 2 do
@@ -216,8 +221,8 @@ function PlayState:update(dt)
         -- if ball goes below bounds, revert to serve state and decrease health
         if self.ball[i].y >= VIRTUAL_HEIGHT and self.ball[i].inPlay then
             self.ball[i].inPlay = false
-            if ballNumber > 1 then
-                ballNumber = ballNumber - 1
+            if self.ballNumber > 1 then
+                self.ballNumber = self.ballNumber - 1
             else
                 self.health = self.health - 1
                 self.paddle.size = math.max(1, self.paddle.size - 1)
@@ -272,6 +277,7 @@ function PlayState:render()
         renderScore(self.score)
         renderHealth(self.health)
         
+        love.graphics.printf('ballNumber: ' .. tostring(self.ballNumber), gFonts['small'], 0, VIRTUAL_HEIGHT - 60, VIRTUAL_WIDTH - 5, 'right')
         love.graphics.printf('recoverPoints: ' .. tostring(self.recoverPoints), gFonts['small'], 0, VIRTUAL_HEIGHT - 50, VIRTUAL_WIDTH - 5, 'right')
         love.graphics.printf('lockedBricks: ' .. tostring(lockedBricks), gFonts['small'], 0, VIRTUAL_HEIGHT - 40, VIRTUAL_WIDTH - 5, 'right')
         love.graphics.printf('health: ' .. tostring(self.health), gFonts['small'], 0, VIRTUAL_HEIGHT - 30, VIRTUAL_WIDTH - 5, 'right')

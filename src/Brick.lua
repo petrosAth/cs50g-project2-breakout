@@ -120,7 +120,7 @@ function Brick:hit()
     
     -- When the brick gets hit it generates a powerup if it is
     -- labeled as such
-    if self.powerUped then
+    if self.powerUped and (not self.powerUp.inPlay) then
         self.powerUp.x = self.x + 8
         self.powerUp.y = self.y
         self.powerUp.inPlay = true
