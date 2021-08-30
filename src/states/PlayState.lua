@@ -16,6 +16,12 @@
 
 PlayState = Class{__includes = BaseState}
 
+-- while lockedBricks is true the locked bricks can't be broken by collision
+lockedBricks = true
+
+-- keep track of the number of balls in play
+local ballNumber = 1
+
 --[[
     We initialize what's in our PlayState via a state table that we pass between
     states as we go from playing to serving.
@@ -30,8 +36,9 @@ function PlayState:enter(params)
     self.level = params.level
 
     self.recoverPoints = params.recoverPoints
-
-    ballNumber = 1
+    
+    -- relock locked bricks everytime game restarts
+    lockedBricks = true
 
     -- give ball random starting velocity
     self.ball[1].dx = math.random(-200, 200)
@@ -87,7 +94,11 @@ function PlayState:update(dt)
             if brick.inPlay and self.ball[i]:collides(brick) then
 
                 -- add to score
-                self.score = self.score + (brick.tier * 200 + brick.color * 25)
+                if brick.color == 6 and not lockedBricks then
+                    self.score = self.score + 2000
+                elseif brick.color ~= 6 then
+                    self.score = self.score + (brick.tier * 200 + brick.color * 25)
+                end
 
                 -- trigger the brick's hit function, which removes it from play
                 brick:hit()
@@ -191,6 +202,8 @@ function PlayState:update(dt)
 
                         table.insert(self.ball, nball)
                     end
+                elseif brick.powerUp.type == 10 then
+                    lockedBricks = false
                 end
             end
         end
@@ -254,15 +267,14 @@ function PlayState:render()
         renderScore(self.score)
         renderHealth(self.health)
         
-        love.graphics.setFont(gFonts['small'])
-        love.graphics.print('size:', VIRTUAL_WIDTH - 90, VIRTUAL_HEIGHT - 10)
-        love.graphics.printf(tostring(self.paddle.size), VIRTUAL_WIDTH - 50, VIRTUAL_HEIGHT - 10, 40, 'right')
-        love.graphics.print('width:', VIRTUAL_WIDTH - 90, VIRTUAL_HEIGHT - 20)
-        love.graphics.printf(tostring(self.paddle.width), VIRTUAL_WIDTH - 50, VIRTUAL_HEIGHT - 20, 40, 'right')
-        love.graphics.print('health:', VIRTUAL_WIDTH - 90, VIRTUAL_HEIGHT - 30)
-        love.graphics.printf(tostring(self.health), VIRTUAL_WIDTH - 50, VIRTUAL_HEIGHT - 30, 40, 'right')
-        love.graphics.print('recoverPoints:', VIRTUAL_WIDTH - 90, VIRTUAL_HEIGHT - 40)
-        love.graphics.printf(tostring(self.recoverPoints), VIRTUAL_WIDTH - 50, VIRTUAL_HEIGHT - 40, 40, 'right')
+        love.graphics.printf('#bricks: ' .. tostring(#self.bricks), gFonts['small'], 0, VIRTUAL_HEIGHT - 80, VIRTUAL_WIDTH - 5, 'right')
+        love.graphics.printf('bricks inPlay: ' .. tostring(bricksInPlay), gFonts['small'], 0, VIRTUAL_HEIGHT - 70, VIRTUAL_WIDTH - 5, 'right')
+        love.graphics.printf('locked bricks: ' .. tostring(lockedBricksNumber), gFonts['small'], 0, VIRTUAL_HEIGHT - 60, VIRTUAL_WIDTH - 5, 'right')
+        love.graphics.printf('recoverPoints: ' .. tostring(self.recoverPoints), gFonts['small'], 0, VIRTUAL_HEIGHT - 50, VIRTUAL_WIDTH - 5, 'right')
+        love.graphics.printf('lockedBricks: ' .. tostring(lockedBricks), gFonts['small'], 0, VIRTUAL_HEIGHT - 40, VIRTUAL_WIDTH - 5, 'right')
+        love.graphics.printf('health: ' .. tostring(self.health), gFonts['small'], 0, VIRTUAL_HEIGHT - 30, VIRTUAL_WIDTH - 5, 'right')
+        love.graphics.printf('width: ' .. tostring(self.paddle.width), gFonts['small'], 0, VIRTUAL_HEIGHT - 20, VIRTUAL_WIDTH - 5, 'right')
+        love.graphics.printf('size: ' .. tostring(self.paddle.size), gFonts['small'], 0, VIRTUAL_HEIGHT - 10, VIRTUAL_WIDTH - 5, 'right')
 
         -- pause text, if paused
         if self.paused then
@@ -274,9 +286,11 @@ end
 
 function PlayState:checkVictory()
     for k, brick in pairs(self.bricks) do
-        if brick.inPlay then
+        if lockedBricks and (bricksInPlay > lockedBricksNumber) then
             return false
-        end 
+        elseif not lockedBricks and (bricksInPlay > 0) then
+            return false
+        end
     end
 
     return true

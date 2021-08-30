@@ -29,7 +29,7 @@ function Ball:init(skin)
     -- our table of Quads relating to the global block texture using this
     self.skin = skin
 
-    -- this value is used to keep track of the ballNumber and loose only
+    -- this value is used to keep track of the ballNumber and lose only
     -- if there is no ball left in play
     self.inPlay = true
 end

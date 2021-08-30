@@ -47,6 +47,12 @@ paletteColors = {
         ['r'] = 251,
         ['g'] = 242,
         ['b'] = 54
+    },
+    -- grey
+    [6] = {
+        ['r'] = 132,
+        ['g'] = 126,
+        ['b'] = 135
     }
 }
 
@@ -67,6 +73,9 @@ function Brick:init(x, y)
     self.powerUp = PowerUp()
     self.powerUped = false
     self.powerUp.type = 1
+
+    -- used to determine whether this brick is locked
+    self.locked = false
 
     -- particle system belonging to the brick, emitted on hit
     self.psystem = love.graphics.newParticleSystem(gTextures['particle'], 64)
@@ -111,20 +120,24 @@ function Brick:hit()
 
     -- if we're at a higher tier than the base, we need to go down a tier
     -- if we're already at the lowest color, else just go down a color
-    if self.tier > 0 then
+    if not lockedBricks and self.color == 6 then
+        self.inPlay = false
+        bricksInPlay = bricksInPlay - 1
+    elseif self.tier > 0 and self.color ~= 6 then
         if self.color == 1 then
             self.tier = self.tier - 1
             self.color = 5
         else
             self.color = self.color - 1
         end
-    else
+    elseif self.color ~= 6 then
         -- if we're in the first tier and the base color, remove brick from play
         if self.color == 1 then
             self.inPlay = false
+            bricksInPlay = bricksInPlay - 1
             -- When the brick gets removed it generates a powerup if it is
             -- labeled as such
-            if self.powerUped then
+            if (self.powerUped and lockedBricks and (lockedBricksNumber > 0)) or self.powerUp.type == 9 then
                 self.powerUp.x = self.x + 8
                 self.powerUp.y = self.y
                 self.powerUp.inPlay = true
@@ -147,7 +160,9 @@ function Brick:update(dt)
 end
 
 function Brick:render()
-    if self.inPlay then
+    if self.locked and self.inPlay then
+        love.graphics.draw(gTextures['main'], gFrames['lockedBrick'][1], self.x, self.y)
+    elseif self.inPlay then
         love.graphics.draw(gTextures['main'], 
             -- multiply color by 4 (-1) to get our color offset, then add tier to that
             -- to draw the correct tier and color brick onto the screen
