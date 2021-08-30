@@ -66,7 +66,7 @@ function Brick:init(x, y)
     -- init powerup
     self.powerUp = PowerUp()
     self.powerUped = false
-    self.powerUp.type = 9
+    self.powerUp.type = 1
 
     -- particle system belonging to the brick, emitted on hit
     self.psystem = love.graphics.newParticleSystem(gTextures['particle'], 64)

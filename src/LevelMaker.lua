@@ -115,6 +115,12 @@ function LevelMaker.createMap(level)
             -- if the brick is poweruped it is labeled here
             if math.random(5) > 0 then
                 b.powerUped = true
+                local i = math.random(9, 10)
+                if i == 9 then 
+                    b.powerUp.type = 9
+                elseif i == 10 then
+                    b.powerUp.type = 10
+                end
             end
 
             table.insert(bricks, b)

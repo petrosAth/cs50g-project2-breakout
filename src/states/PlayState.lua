@@ -54,8 +54,10 @@ function PlayState:update(dt)
 
     self.paddle:update(dt)
     for i = 1, #self.ball do
-        -- update positions based on velocity
-        self.ball[i]:update(dt)
+        if self.ball[i].inPlay then
+            -- update positions based on velocity
+            self.ball[i]:update(dt)
+        end
 
         if self.ball[i]:collides(self.paddle) then
             -- raise ball above paddle in case it goes below it, then reverse dy
@@ -94,6 +96,10 @@ function PlayState:update(dt)
                 if self.score > self.recoverPoints then
                     -- can't go above 3 health
                     self.health = math.min(3, self.health + 1)
+
+                    -- can't go larger than size 4
+                    self.paddle.size = math.min(4, self.paddle.size + 1)
+                    self.paddle.width = self.paddle.size * 32
 
                     -- multiply recover points by 2
                     self.recoverPoints = self.recoverPoints + math.min(100000, self.recoverPoints * 2)
@@ -171,29 +177,33 @@ function PlayState:update(dt)
                 gSounds['brick-hit-2']:play()
                 brick.powerUp.inPlay = false
 
-                ballNumber = ballNumber + 2
+                if brick.powerUp.type == 9 then
+                    ballNumber = ballNumber + 2
 
-                -- insert two more balls in play
-                for m = 1, 2 do
-                    nball = Ball()
-                    nball.skin = math.random(7)
-                    nball.x = self.paddle.x + (self.paddle.width / 2) - 4
-                    nball.y = self.paddle.y - 8
-                    nball.dx = math.random(-200, 200)
-                    nball.dy = math.random(-50, -60)
+                    -- insert two more balls in play
+                    for m = 1, 2 do
+                        nball = Ball()
+                        nball.skin = math.random(7)
+                        nball.x = self.paddle.x + (self.paddle.width / 2) - 4
+                        nball.y = self.paddle.y - 8
+                        nball.dx = math.random(-200, 200)
+                        nball.dy = math.random(-50, -60)
 
-                    table.insert(self.ball, nball)
+                        table.insert(self.ball, nball)
+                    end
                 end
             end
         end
 
         -- if ball goes below bounds, revert to serve state and decrease health
         if self.ball[i].y >= VIRTUAL_HEIGHT and self.ball[i].inPlay then
+            self.ball[i].inPlay = false
             if ballNumber > 1 then
                 ballNumber = ballNumber - 1
-                self.ball[i].inPlay = false
             else
                 self.health = self.health - 1
+                self.paddle.size = math.max(1, self.paddle.size - 1)
+                self.paddle.width = self.paddle.size * 32
                 gSounds['hurt']:play()
 
                 if self.health == 0 then
@@ -243,6 +253,16 @@ function PlayState:render()
 
         renderScore(self.score)
         renderHealth(self.health)
+        
+        love.graphics.setFont(gFonts['small'])
+        love.graphics.print('size:', VIRTUAL_WIDTH - 90, VIRTUAL_HEIGHT - 10)
+        love.graphics.printf(tostring(self.paddle.size), VIRTUAL_WIDTH - 50, VIRTUAL_HEIGHT - 10, 40, 'right')
+        love.graphics.print('width:', VIRTUAL_WIDTH - 90, VIRTUAL_HEIGHT - 20)
+        love.graphics.printf(tostring(self.paddle.width), VIRTUAL_WIDTH - 50, VIRTUAL_HEIGHT - 20, 40, 'right')
+        love.graphics.print('health:', VIRTUAL_WIDTH - 90, VIRTUAL_HEIGHT - 30)
+        love.graphics.printf(tostring(self.health), VIRTUAL_WIDTH - 50, VIRTUAL_HEIGHT - 30, 40, 'right')
+        love.graphics.print('recoverPoints:', VIRTUAL_WIDTH - 90, VIRTUAL_HEIGHT - 40)
+        love.graphics.printf(tostring(self.recoverPoints), VIRTUAL_WIDTH - 50, VIRTUAL_HEIGHT - 40, 40, 'right')
 
         -- pause text, if paused
         if self.paused then
