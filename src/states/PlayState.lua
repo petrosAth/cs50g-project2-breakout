@@ -16,9 +16,6 @@
 
 PlayState = Class{__includes = BaseState}
 
--- while lockedBricks is true the locked bricks can't be broken by collision
-lockedBricks = true
-
 -- keep track of the number of balls in play
 local ballNumber = 1
 
@@ -34,11 +31,7 @@ function PlayState:enter(params)
     self.highScores = params.highScores
     self.ball = params.ball
     self.level = params.level
-
     self.recoverPoints = params.recoverPoints
-    
-    -- relock locked bricks everytime game restarts
-    lockedBricks = true
 
     -- give ball random starting velocity
     self.ball[1].dx = math.random(-200, 200)
@@ -100,6 +93,18 @@ function PlayState:update(dt)
                     self.score = self.score + (brick.tier * 200 + brick.color * 25)
                 end
 
+                -- if the brick is poweruped it is labeled here
+                if math.random(3) > 2 then
+                    local i = math.random(9, 10)
+                    if i == 9 then
+                        brick.powerUped = true
+                        brick.powerUp.type = 9
+                    elseif lockedBricks and (i == 10) then
+                        brick.powerUped = true
+                        brick.powerUp.type = 10
+                    end
+                end
+                
                 -- trigger the brick's hit function, which removes it from play
                 brick:hit()
 
@@ -267,9 +272,6 @@ function PlayState:render()
         renderScore(self.score)
         renderHealth(self.health)
         
-        love.graphics.printf('#bricks: ' .. tostring(#self.bricks), gFonts['small'], 0, VIRTUAL_HEIGHT - 80, VIRTUAL_WIDTH - 5, 'right')
-        love.graphics.printf('bricks inPlay: ' .. tostring(bricksInPlay), gFonts['small'], 0, VIRTUAL_HEIGHT - 70, VIRTUAL_WIDTH - 5, 'right')
-        love.graphics.printf('locked bricks: ' .. tostring(lockedBricksNumber), gFonts['small'], 0, VIRTUAL_HEIGHT - 60, VIRTUAL_WIDTH - 5, 'right')
         love.graphics.printf('recoverPoints: ' .. tostring(self.recoverPoints), gFonts['small'], 0, VIRTUAL_HEIGHT - 50, VIRTUAL_WIDTH - 5, 'right')
         love.graphics.printf('lockedBricks: ' .. tostring(lockedBricks), gFonts['small'], 0, VIRTUAL_HEIGHT - 40, VIRTUAL_WIDTH - 5, 'right')
         love.graphics.printf('health: ' .. tostring(self.health), gFonts['small'], 0, VIRTUAL_HEIGHT - 30, VIRTUAL_WIDTH - 5, 'right')
@@ -286,9 +288,7 @@ end
 
 function PlayState:checkVictory()
     for k, brick in pairs(self.bricks) do
-        if lockedBricks and (bricksInPlay > lockedBricksNumber) then
-            return false
-        elseif not lockedBricks and (bricksInPlay > 0) then
+        if brick.inPlay then
             return false
         end
     end

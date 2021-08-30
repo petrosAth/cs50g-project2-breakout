@@ -21,6 +21,9 @@ function VictoryState:enter(params)
     self.health = params.health
     self.ball = params.ball
     self.recoverPoints = params.recoverPoints
+    
+    -- relock locked bricks everytime player finishes a level
+    lockedBricks = true
 end
 
 function VictoryState:update(dt)

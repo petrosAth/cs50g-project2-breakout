@@ -16,6 +16,9 @@ PaddleSelectState = Class{__includes = BaseState}
 
 function PaddleSelectState:enter(params)
     self.highScores = params.highScores
+
+    -- while lockedBricks is true the locked bricks can't be broken by collision
+    lockedBricks = true
 end
 
 function PaddleSelectState:init()

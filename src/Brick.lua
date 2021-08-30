@@ -117,12 +117,19 @@ function Brick:hit()
     -- sound on hit
     gSounds['brick-hit-2']:stop()
     gSounds['brick-hit-2']:play()
+    
+    -- When the brick gets hit it generates a powerup if it is
+    -- labeled as such
+    if self.powerUped then
+        self.powerUp.x = self.x + 8
+        self.powerUp.y = self.y
+        self.powerUp.inPlay = true
+    end
 
     -- if we're at a higher tier than the base, we need to go down a tier
     -- if we're already at the lowest color, else just go down a color
     if not lockedBricks and self.color == 6 then
         self.inPlay = false
-        bricksInPlay = bricksInPlay - 1
     elseif self.tier > 0 and self.color ~= 6 then
         if self.color == 1 then
             self.tier = self.tier - 1
@@ -134,14 +141,6 @@ function Brick:hit()
         -- if we're in the first tier and the base color, remove brick from play
         if self.color == 1 then
             self.inPlay = false
-            bricksInPlay = bricksInPlay - 1
-            -- When the brick gets removed it generates a powerup if it is
-            -- labeled as such
-            if (self.powerUped and lockedBricks and (lockedBricksNumber > 0)) or self.powerUp.type == 9 then
-                self.powerUp.x = self.x + 8
-                self.powerUp.y = self.y
-                self.powerUp.inPlay = true
-            end
         else
             self.color = self.color - 1
         end
