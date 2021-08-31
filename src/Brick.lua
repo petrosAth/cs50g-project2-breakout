@@ -159,7 +159,7 @@ function Brick:update(dt)
 end
 
 function Brick:render()
-    if self.locked and self.inPlay then
+    if self.locked and lockedBricks and self.inPlay then
         love.graphics.draw(gTextures['main'], gFrames['lockedBrick'][1], self.x, self.y)
     elseif self.inPlay then
         love.graphics.draw(gTextures['main'], 

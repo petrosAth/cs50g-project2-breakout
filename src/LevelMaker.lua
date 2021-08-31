@@ -103,7 +103,7 @@ function LevelMaker.createMap(level)
             if math.random(100) > 98 then
                 b.locked = true
                 b.color = 6
-                b.tier = 3
+                b.tier = 0
                 lockedBricksNumber = lockedBricksNumber + 1
             else
                 b.locked = false
