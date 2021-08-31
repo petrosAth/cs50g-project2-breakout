@@ -88,14 +88,17 @@ function PlayState:update(dt)
 
                 -- add to score
                 if brick.color == 6 and not lockedBricks then
-                    self.score = self.score + 2000
+                    self.score = self.score + 5000
                 elseif brick.color ~= 6 then
                     self.score = self.score + (brick.tier * 200 + brick.color * 25)
                 end
 
                 -- if the brick is poweruped it is labeled here
-                if math.random(3) > 2 then
-                    if lockedBricks then
+                if math.random(5) > 4 then
+                    if not lockedBricks or (lockedBricksNumber == 0) then
+                        brick.powerUped = true
+                        brick.powerUp.type = 9
+                    else
                         local i = math.random(9, 10)
                         if i == 9 then
                             brick.powerUped = true
@@ -103,10 +106,7 @@ function PlayState:update(dt)
                         elseif i == 10 then
                             brick.powerUped = true
                             brick.powerUp.type = 10
-                        end
-                    else
-                        brick.powerUped = true
-                        brick.powerUp.type = 9
+                        end                    
                     end
                 end
                 
@@ -215,6 +215,7 @@ function PlayState:update(dt)
                 elseif brick.powerUp.type == 10 then
                     lockedBricks = false
                 end
+                brick.powerUp.type = 9
             end
         end
 
@@ -276,13 +277,6 @@ function PlayState:render()
 
         renderScore(self.score)
         renderHealth(self.health)
-        
-        love.graphics.printf('ballNumber: ' .. tostring(self.ballNumber), gFonts['small'], 0, VIRTUAL_HEIGHT - 60, VIRTUAL_WIDTH - 5, 'right')
-        love.graphics.printf('recoverPoints: ' .. tostring(self.recoverPoints), gFonts['small'], 0, VIRTUAL_HEIGHT - 50, VIRTUAL_WIDTH - 5, 'right')
-        love.graphics.printf('lockedBricks: ' .. tostring(lockedBricks), gFonts['small'], 0, VIRTUAL_HEIGHT - 40, VIRTUAL_WIDTH - 5, 'right')
-        love.graphics.printf('health: ' .. tostring(self.health), gFonts['small'], 0, VIRTUAL_HEIGHT - 30, VIRTUAL_WIDTH - 5, 'right')
-        love.graphics.printf('width: ' .. tostring(self.paddle.width), gFonts['small'], 0, VIRTUAL_HEIGHT - 20, VIRTUAL_WIDTH - 5, 'right')
-        love.graphics.printf('size: ' .. tostring(self.paddle.size), gFonts['small'], 0, VIRTUAL_HEIGHT - 10, VIRTUAL_WIDTH - 5, 'right')
 
         -- pause text, if paused
         if self.paused then

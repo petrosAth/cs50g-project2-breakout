@@ -32,6 +32,9 @@ LevelMaker = Class{}
 ]]
 function LevelMaker.createMap(level)
 
+    -- variable to keep track of the locked bricks in any given level
+    lockedBricksNumber = 0
+
     local bricks = {}
 
     -- randomly choose the number of rows
@@ -97,10 +100,11 @@ function LevelMaker.createMap(level)
             )
             
             -- if brick gets locked skip the rest of the calculations            
-            if math.random(100) > 80 then
+            if math.random(100) > 98 then
                 b.locked = true
                 b.color = 6
                 b.tier = 3
+                lockedBricksNumber = lockedBricksNumber + 1
             else
                 b.locked = false
                 -- if we're alternating, figure out which color/tier we're on
